@@ -1,47 +1,57 @@
+
 pipeline {
     agent any
+
+    environment {
+        PYTHON_EXE = 'C:\\Users\\yashv\\AppData\\Local\\Programs\\Python\\Python313\\python.exe'
+    }
 
     stages {
         stage('Checkout Code') {
             steps {
-                echo 'Jenkins has retrieved the GitHub project.'
+                echo 'Source code checked out from GitHub by Jenkins.'
             }
         }
 
-        stage('Check Python') {
+        stage('Check Python and Git') {
             steps {
-                bat 'python --version'
+                bat '"%PYTHON_EXE%" --version'
                 bat 'git --version'
+            }
+        }
+
+        stage('Create Virtual Environment') {
+            steps {
+                bat '"%PYTHON_EXE%" -m venv .venv'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                bat 'python -m venv .venv'
-                bat '.venv\\Scripts\\python.exe -m pip install -r requirements.txt'
+                bat '".venv\\Scripts\\python.exe" -m pip install --upgrade pip'
+                bat '".venv\\Scripts\\python.exe" -m pip install -r requirements.txt'
             }
         }
 
         stage('Run Iris Application') {
             steps {
-                bat '.venv\\Scripts\\python.exe app.py'
+                bat '".venv\\Scripts\\python.exe" app.py'
             }
         }
 
         stage('Run Tests') {
             steps {
-                bat '.venv\\Scripts\\python.exe -m unittest -v'
+                bat '".venv\\Scripts\\python.exe" -m unittest -v'
             }
         }
     }
 
     post {
         success {
-            echo 'GitHub Iris pipeline completed successfully!'
+            echo 'SUCCESS: GitHub Iris pipeline completed!'
         }
-
         failure {
-            echo 'GitHub Iris pipeline failed. Check the console output.'
+            echo 'FAILED: Check the first failed stage in Console Output.'
         }
     }
 }
